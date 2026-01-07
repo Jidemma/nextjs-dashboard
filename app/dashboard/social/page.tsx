@@ -9,14 +9,13 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Header } from '@/components/Header';
-import { MetricCard } from '@/components/MetricCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { BarChart } from '@/components/charts/BarChart';
 import { PieChart } from '@/components/charts/PieChart';
 import { NetworkGraph } from '@/components/charts/NetworkGraph';
-import { Users, UserPlus, UserCheck, Network, TrendingUp, Heart, MessageCircle, Share2 } from 'lucide-react';
+import { Users, UserCheck, TrendingUp } from 'lucide-react';
 import { downloadJSON, formatNumber } from '@/lib/utils';
 import { getApiUrl, fetchWithTimeout } from '@/lib/api';
 import type { SocialNetworkAnalytics, ApiResponse } from '@/types/analytics';
@@ -108,66 +107,10 @@ export default function SocialPage() {
           <DateRangePicker onDateChange={handleDateChange} />
         </div>
 
-        {/* Summary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
-            title="Total Friendships"
-            value={formatNumber(analytics?.network_overview?.total_friendships || 0)}
-            icon={Users}
-            color="blue"
-          />
-          <MetricCard
-            title="New Friendships"
-            value={formatNumber(analytics?.network_overview?.new_friendships || 0)}
-            icon={UserPlus}
-            color="green"
-          />
-          <MetricCard
-            title="Avg Friends/User"
-            value={analytics?.network_overview?.avg_friends_per_user?.toFixed(1) || '0'}
-            icon={UserCheck}
-            color="purple"
-          />
-          <MetricCard
-            title="Network Density"
-            value={`${((analytics?.network_overview?.network_density || 0) * 100).toFixed(2)}%`}
-            icon={Network}
-            color="yellow"
-          />
-        </div>
-
-        {/* Secondary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
-            title="Acceptance Rate"
-            value={`${analytics?.social_activity?.acceptance_rate?.toFixed(1) || 0}%`}
-            icon={TrendingUp}
-            color="green"
-          />
-          <MetricCard
-            title="Total Requests"
-            value={formatNumber(analytics?.social_activity?.total_friend_requests || 0)}
-            icon={MessageCircle}
-            color="blue"
-          />
-          <MetricCard
-            title="Accepted"
-            value={formatNumber(analytics?.social_activity?.accepted_requests || 0)}
-            icon={Heart}
-            color="green"
-          />
-          <MetricCard
-            title="Pending"
-            value={formatNumber(analytics?.social_activity?.pending_requests || 0)}
-            icon={Share2}
-            color="yellow"
-          />
-        </div>
-
-        {/* Network Performance Breakdown */}
+        {/* Network Performance Metrics */}
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Network Performance Metrics</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="flex items-center justify-center mb-2">
                 <Users className="h-5 w-5 text-blue-600 mr-2" />
@@ -187,16 +130,6 @@ export default function SocialPage() {
                 {analytics?.social_activity?.acceptance_rate?.toFixed(1) || 0}%
               </p>
               <p className="text-xs text-gray-500 mt-1">Requests accepted</p>
-            </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="flex items-center justify-center mb-2">
-                <Network className="h-5 w-5 text-purple-600 mr-2" />
-                <h4 className="text-sm font-medium text-gray-700">Network Density</h4>
-              </div>
-              <p className="text-3xl font-bold text-purple-600">
-                {((analytics?.network_overview?.network_density || 0) * 100).toFixed(2)}%
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Connection coverage</p>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="flex items-center justify-center mb-2">
