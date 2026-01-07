@@ -1,0 +1,47 @@
+{
+  "name": "njem-analytics-dashboard",
+  "version": "1.0.0",
+  "description": "Interactive analytics dashboard for NJEM Travel Platform",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.17.0",
+    "@types/leaflet": "^1.9.21",
+    "clsx": "^2.1.0",
+    "date-fns": "^3.0.6",
+    "dotenv": "^17.2.3",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.312.0",
+    "mongodb": "^6.3.0",
+    "next": "^14.1.0",
+    "plotly.js": "^3.3.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-force-graph-2d": "^1.29.0",
+    "react-leaflet": "^4.2.1",
+    "react-plotly.js": "^2.6.0",
+    "recharts": "^2.10.3",
+    "tailwind-merge": "^2.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^14.1.0",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
