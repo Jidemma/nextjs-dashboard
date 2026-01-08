@@ -8,6 +8,8 @@
 
 import { LucideIcon } from 'lucide-react';
 import { formatNumber, formatPercentage, getChangeColor } from '@/lib/utils';
+import { MetricTooltip } from './MetricTooltip';
+import type { MetricDefinition } from '@/lib/metricDefinitions';
 
 interface MetricCardProps {
   title: string;
@@ -18,6 +20,7 @@ interface MetricCardProps {
   icon?: LucideIcon;
   color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple';
   isLoading?: boolean;
+  metricInfo?: MetricDefinition;
 }
 
 const colorClasses = {
@@ -37,6 +40,7 @@ export function MetricCard({
   icon: Icon,
   color = 'blue',
   isLoading = false,
+  metricInfo,
 }: MetricCardProps) {
   const formatValue = () => {
     if (typeof value === 'string') return value;
@@ -64,7 +68,18 @@ export function MetricCard({
   return (
     <div className="bg-white rounded-lg shadow hover-lift p-6">
       <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-1">
         <p className="text-sm font-medium text-gray-600">{title}</p>
+          {metricInfo && (
+            <MetricTooltip
+              title={title}
+              description={metricInfo.description}
+              calculation={metricInfo.calculation}
+              filtered={metricInfo.filtered}
+              note={metricInfo.note}
+            />
+          )}
+        </div>
         {Icon && (
           <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
             <Icon className="h-5 w-5 text-white" />

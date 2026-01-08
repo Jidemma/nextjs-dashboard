@@ -50,7 +50,7 @@ export default function SocialPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    window.location.reload();
   };
 
   const handleExport = () => {

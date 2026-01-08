@@ -13,11 +13,13 @@ import { MetricCard } from '@/components/MetricCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { ErrorMessage } from '@/components/ErrorMessage';
 import { DateRangePicker } from '@/components/DateRangePicker';
+import { MetricTooltip } from '@/components/MetricTooltip';
 import { LineChart } from '@/components/charts/LineChart';
 import { BarChart } from '@/components/charts/BarChart';
 import { Users, Map, MessageCircle, UserPlus, TrendingUp, Activity, Heart } from 'lucide-react';
 import { downloadJSON, formatNumber } from '@/lib/utils';
 import { getApiUrl, fetchWithTimeout } from '@/lib/api';
+import { getMetricDefinition } from '@/lib/metricDefinitions';
 import type { OverviewAnalytics, ApiResponse } from '@/types/analytics';
 
 export default function DashboardPage() {
@@ -50,7 +52,7 @@ export default function DashboardPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    window.location.reload();
   };
 
   const handleExport = () => {
@@ -85,6 +87,7 @@ export default function DashboardPage() {
   }
 
   const analytics = data?.data;
+  const isAllTime = !startDate && !endDate;
 
   return (
     <div>
@@ -132,7 +135,8 @@ export default function DashboardPage() {
                               year: 'numeric',
                               hour: '2-digit',
                               minute: '2-digit',
-                              second: '2-digit'
+                              second: '2-digit',
+                              timeZoneName: 'short'
                             })
                           : 'N/A'
                         }
@@ -157,24 +161,28 @@ export default function DashboardPage() {
             value={analytics?.total_metrics?.total_users || 0}
             icon={Users}
             color="blue"
+            metricInfo={getMetricDefinition('Total Users', 'overview')}
           />
           <MetricCard
             title="Active Users"
             value={analytics?.total_metrics?.active_users || 0}
             icon={UserPlus}
             color="green"
+            metricInfo={getMetricDefinition('Active Users', 'overview')}
           />
           <MetricCard
             title="Total Journeys"
             value={analytics?.total_metrics?.total_journeys || 0}
             icon={Map}
             color="purple"
+            metricInfo={getMetricDefinition('Total Journeys', 'overview')}
           />
           <MetricCard
             title="Total Comments"
             value={analytics?.total_metrics?.total_comments || 0}
             icon={MessageCircle}
             color="yellow"
+            metricInfo={getMetricDefinition('Total Comments', 'overview')}
           />
         </div>
 
@@ -187,29 +195,92 @@ export default function DashboardPage() {
             </h3>
             <div className="space-y-5">
               <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">User Growth Rate</span>
-                <span className="text-xl font-bold text-green-600">
-                  {analytics?.growth_metrics?.user_growth_rate !== undefined 
-                    ? `${analytics.growth_metrics.user_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.user_growth_rate.toFixed(1)}%`
-                    : '+0%'
+                  <MetricTooltip
+                    title="User Growth Rate"
+                    description={getMetricDefinition('User Growth Rate', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('User Growth Rate', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('User Growth Rate', 'overview')?.filtered || true}
+                    note={getMetricDefinition('User Growth Rate', 'overview')?.note}
+                  />
+                </div>
+                <span className={`text-xl font-bold ${
+                  analytics?.growth_metrics?.user_growth_rate === null || 
+                  analytics?.growth_metrics?.user_growth_rate === undefined
+                    ? 'text-gray-400' 
+                    : (typeof analytics.growth_metrics.user_growth_rate === 'number' && !isFinite(analytics.growth_metrics.user_growth_rate))
+                      ? 'text-green-600'
+                      : analytics.growth_metrics.user_growth_rate >= 0 
+                        ? 'text-green-600' 
+                        : 'text-red-600'
+                }`}>
+                  {analytics?.growth_metrics?.user_growth_rate === null || 
+                   analytics?.growth_metrics?.user_growth_rate === undefined
+                    ? 'N/A'
+                    : (typeof analytics.growth_metrics.user_growth_rate === 'number' && !isFinite(analytics.growth_metrics.user_growth_rate))
+                      ? 'New'
+                      : `${analytics.growth_metrics.user_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.user_growth_rate.toFixed(1)}%`
                   }
                 </span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Journey Growth Rate</span>
-                <span className="text-xl font-bold text-blue-600">
-                  {analytics?.growth_metrics?.journey_growth_rate !== undefined 
-                    ? `${analytics.growth_metrics.journey_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.journey_growth_rate.toFixed(1)}%`
-                    : '+0%'
+                  <MetricTooltip
+                    title="Journey Growth Rate"
+                    description={getMetricDefinition('Journey Growth Rate', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('Journey Growth Rate', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('Journey Growth Rate', 'overview')?.filtered || true}
+                    note={getMetricDefinition('Journey Growth Rate', 'overview')?.note}
+                  />
+                </div>
+                <span className={`text-xl font-bold ${
+                  analytics?.growth_metrics?.journey_growth_rate === null || 
+                  analytics?.growth_metrics?.journey_growth_rate === undefined
+                    ? 'text-gray-400' 
+                    : (typeof analytics.growth_metrics.journey_growth_rate === 'number' && !isFinite(analytics.growth_metrics.journey_growth_rate))
+                      ? 'text-blue-600'
+                      : analytics.growth_metrics.journey_growth_rate >= 0 
+                        ? 'text-blue-600' 
+                        : 'text-red-600'
+                }`}>
+                  {analytics?.growth_metrics?.journey_growth_rate === null || 
+                   analytics?.growth_metrics?.journey_growth_rate === undefined
+                    ? 'N/A'
+                    : (typeof analytics.growth_metrics.journey_growth_rate === 'number' && !isFinite(analytics.growth_metrics.journey_growth_rate))
+                      ? 'New'
+                      : `${analytics.growth_metrics.journey_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.journey_growth_rate.toFixed(1)}%`
                   }
                 </span>
               </div>
               <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Engagement Growth Rate</span>
-                <span className="text-xl font-bold text-purple-600">
-                  {analytics?.growth_metrics?.engagement_growth_rate !== undefined 
-                    ? `${analytics.growth_metrics.engagement_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.engagement_growth_rate.toFixed(1)}%`
-                    : '+0%'
+                  <MetricTooltip
+                    title="Engagement Growth Rate"
+                    description={getMetricDefinition('Engagement Growth Rate', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('Engagement Growth Rate', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('Engagement Growth Rate', 'overview')?.filtered || true}
+                    note={getMetricDefinition('Engagement Growth Rate', 'overview')?.note}
+                  />
+                </div>
+                <span className={`text-xl font-bold ${
+                  analytics?.growth_metrics?.engagement_growth_rate === null || 
+                  analytics?.growth_metrics?.engagement_growth_rate === undefined
+                    ? 'text-gray-400' 
+                    : (typeof analytics.growth_metrics.engagement_growth_rate === 'number' && !isFinite(analytics.growth_metrics.engagement_growth_rate))
+                      ? 'text-purple-600'
+                      : analytics.growth_metrics.engagement_growth_rate >= 0 
+                        ? 'text-purple-600' 
+                        : 'text-red-600'
+                }`}>
+                  {analytics?.growth_metrics?.engagement_growth_rate === null || 
+                   analytics?.growth_metrics?.engagement_growth_rate === undefined
+                    ? 'N/A'
+                    : (typeof analytics.growth_metrics.engagement_growth_rate === 'number' && !isFinite(analytics.growth_metrics.engagement_growth_rate))
+                      ? 'New'
+                      : `${analytics.growth_metrics.engagement_growth_rate >= 0 ? '+' : ''}${analytics.growth_metrics.engagement_growth_rate.toFixed(1)}%`
                   }
                 </span>
               </div>
@@ -223,19 +294,46 @@ export default function DashboardPage() {
             </h3>
             <div className="space-y-5">
               <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Avg Comments/Journey</span>
+                  <MetricTooltip
+                    title="Avg Comments/Journey"
+                    description={getMetricDefinition('Avg Comments/Journey', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('Avg Comments/Journey', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('Avg Comments/Journey', 'overview')?.filtered || true}
+                    note={getMetricDefinition('Avg Comments/Journey', 'overview')?.note}
+                  />
+                </div>
                 <span className="text-xl font-bold text-gray-900">
                   {analytics?.engagement_metrics?.avg_comments_per_journey?.toFixed(1) || '0.0'}
                 </span>
               </div>
               <div className="flex justify-between items-center pb-4 border-b border-gray-100">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Avg Friends/User</span>
+                  <MetricTooltip
+                    title="Avg Friends/User"
+                    description={getMetricDefinition('Avg Friends/User', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('Avg Friends/User', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('Avg Friends/User', 'overview')?.filtered || false}
+                    note={getMetricDefinition('Avg Friends/User', 'overview')?.note}
+                  />
+                </div>
                 <span className="text-xl font-bold text-gray-900">
                   {analytics?.engagement_metrics?.avg_friends_per_user?.toFixed(1) || '0.0'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Engagement Rate</span>
+                  <MetricTooltip
+                    title="Engagement Rate"
+                    description={getMetricDefinition('Engagement Rate', 'overview')?.description || ''}
+                    calculation={getMetricDefinition('Engagement Rate', 'overview')?.calculation || ''}
+                    filtered={getMetricDefinition('Engagement Rate', 'overview')?.filtered || true}
+                    note={getMetricDefinition('Engagement Rate', 'overview')?.note}
+                  />
+                </div>
                 <span className="text-xl font-bold text-gray-900">
                   {analytics?.engagement_metrics?.engagement_rate?.toFixed(1) || '0.0'}%
                 </span>

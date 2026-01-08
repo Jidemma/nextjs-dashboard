@@ -51,10 +51,18 @@ export function PieChart({
             cx="50%"
             cy="50%"
             labelLine={false}
-            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-            outerRadius={80}
+            label={({ name, percent }) => {
+              // Only show label if slice is large enough (>= 3%) to avoid overlap
+              if (percent >= 0.03) {
+                return `${name}: ${(percent * 100).toFixed(0)}%`;
+              }
+              return '';
+            }}
+            outerRadius={height >= 400 ? 140 : height >= 350 ? 120 : 100}
+            innerRadius={0}
             fill="#8884d8"
             dataKey="value"
+            paddingAngle={2}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} />
@@ -68,7 +76,10 @@ export function PieChart({
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
           />
-          <Legend />
+          <Legend 
+            wrapperStyle={{ paddingTop: '20px' }}
+            iconType="circle"
+          />
         </RechartsPieChart>
       </ResponsiveContainer>
     </div>

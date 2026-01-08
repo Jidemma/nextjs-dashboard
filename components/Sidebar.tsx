@@ -13,10 +13,7 @@ import {
   Users, 
   Map, 
   MapPin, 
-  Network,
-  Database,
-  Activity,
-  Settings
+  Network
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,8 +29,6 @@ const navigation: NavItem[] = [
   { name: 'Journeys', href: '/dashboard/journeys', icon: Map },
   { name: 'Geographic', href: '/dashboard/geographic', icon: MapPin },
   { name: 'Social Network', href: '/dashboard/social', icon: Network },
-  { name: 'Collections', href: '/dashboard/collections', icon: Database },
-  { name: 'System Health', href: '/dashboard/health', icon: Activity },
 ];
 
 export function Sidebar() {

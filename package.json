@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:overview": "node test_overview_analytics.js",
+    "test:users": "node test_user_analytics.js",
+    "test:journeys": "node test_journey_analytics_time_periods.js",
+    "test:journeys": "node test_journey_analytics_time_periods.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.17.0",

@@ -16,7 +16,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { BarChart } from '@/components/charts/BarChart';
 import { PieChart } from '@/components/charts/PieChart';
 import { LineChart } from '@/components/charts/LineChart';
-import { Map, MapPin, MessageCircle, CheckCircle, Clock, Users, DollarSign, TrendingUp, Calendar } from 'lucide-react';
+import { Map, MapPin, MessageCircle, CheckCircle, Clock, Users, DollarSign, TrendingUp, Calendar, Star } from 'lucide-react';
 import { downloadJSON, formatNumber } from '@/lib/utils';
 import { getApiUrl, fetchWithTimeout } from '@/lib/api';
 import type { JourneyAnalytics, ApiResponse } from '@/types/analytics';
@@ -51,7 +51,7 @@ export default function JourneysPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    window.location.reload();
   };
 
   const handleExport = () => {
@@ -96,7 +96,7 @@ export default function JourneysPage() {
   const mostCommentedData = analytics?.journey_engagement?.most_commented_journeys
     ?.slice(0, 10)
     .map(journey => ({
-      name: journey.title || `Journey ${journey.journey_id.slice(-6)}`,
+      name: journey.title || `Journey ${journey.journey_id?.slice(-6) || 'Unknown'}`,
       comments: journey.comments,
     })) || [];
 
@@ -124,6 +124,9 @@ export default function JourneysPage() {
       count: d.count,
     })) || [];
 
+  // Top journey creators (potential influencers)
+  const topCreatorsData = analytics?.top_journey_creators?.slice(0, 10) || [];
+
   return (
     <div>
       <Header
@@ -140,7 +143,7 @@ export default function JourneysPage() {
         </div>
 
         {/* Summary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <MetricCard
             title="Total Journeys"
             value={formatNumber(analytics?.journey_overview?.total_journeys || 0)}
@@ -148,54 +151,16 @@ export default function JourneysPage() {
             color="purple"
           />
           <MetricCard
-            title="Active Journeys"
+            title="Published Journeys"
             value={formatNumber(analytics?.journey_overview?.active_journeys || 0)}
             icon={MapPin}
             color="blue"
           />
           <MetricCard
-            title="Completed Journeys"
-            value={formatNumber(analytics?.journey_overview?.completed_journeys || 0)}
-            icon={CheckCircle}
-            color="green"
-          />
-          <MetricCard
-            title="Completion Rate"
-            value={`${analytics?.journey_overview?.total_journeys > 0 
-              ? ((analytics?.journey_overview?.completed_journeys || 0) / analytics?.journey_overview?.total_journeys * 100).toFixed(1)
-              : 0}%`}
-            icon={TrendingUp}
-            color="green"
-          />
-        </div>
-
-        {/* Secondary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
             title="Total Comments"
             value={formatNumber(analytics?.journey_engagement?.total_comments || 0)}
             icon={MessageCircle}
             color="yellow"
-          />
-          <MetricCard
-            title="Avg Duration"
-            value={`${analytics?.journey_overview?.avg_journey_duration?.toFixed(1) || 0} days`}
-            icon={Clock}
-            color="blue"
-          />
-          <MetricCard
-            title="Avg Participants"
-            value={analytics?.journey_overview?.avg_participants_per_journey?.toFixed(1) || '0'}
-            icon={Users}
-            color="purple"
-          />
-          <MetricCard
-            title="Engagement Rate"
-            value={`${analytics?.journey_overview?.total_journeys > 0
-              ? ((analytics?.journey_engagement?.total_comments || 0) / analytics?.journey_overview?.total_journeys).toFixed(1)
-              : 0}`}
-            icon={TrendingUp}
-            color="green"
           />
         </div>
 
@@ -256,7 +221,7 @@ export default function JourneysPage() {
               <PieChart
                 data={statusDistributionData}
                 title="📊 Journey Status Distribution"
-                height={350}
+                height={450}
               />
             </div>
           )}
@@ -269,7 +234,7 @@ export default function JourneysPage() {
                 xKey="month"
                 yKeys={[{ key: 'journeys', color: '#8b5cf6', name: 'Journeys Created' }]}
                 title="📈 Journey Creation Trends"
-                height={350}
+                height={450}
               />
             </div>
           )}
@@ -379,10 +344,11 @@ export default function JourneysPage() {
           )}
         </div>
 
-        {/* Most Commented Journeys Table */}
-        {mostCommentedData.length > 0 && (
+        {/* Top Journey Creators (Potential Influencers) */}
+        {topCreatorsData.length > 0 && (
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">💬 Most Engaged Journeys</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">⭐ Top Journey Creators</h3>
+            <p className="text-sm text-gray-600 mb-4">Users with the most journeys - potential influencers</p>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -391,38 +357,38 @@ export default function JourneysPage() {
                       Rank
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Journey Title
+                      User
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Comments
+                      Journeys Created
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Engagement
+                      Share
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {mostCommentedData.map((journey, idx) => {
-                    const maxComments = mostCommentedData[0]?.comments || 1;
-                    const percentage = (journey.comments / maxComments) * 100;
+                  {topCreatorsData.map((creator, idx) => {
+                    const maxJourneys = topCreatorsData[0]?.journey_count || 1;
+                    const percentage = (creator.journey_count / maxJourneys) * 100;
                     return (
                       <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           #{idx + 1}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{journey.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{creator.display_name}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-orange-600">
-                            {formatNumber(journey.comments)} comments
+                          <div className="text-sm font-semibold text-purple-600">
+                            {formatNumber(creator.journey_count)} journeys
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="w-24 bg-gray-200 rounded-full h-2 mr-2">
                               <div
-                                className="bg-orange-600 h-2 rounded-full"
+                                className="bg-purple-600 h-2 rounded-full"
                                 style={{ width: `${Math.min(percentage, 100)}%` }}
                               />
                             </div>

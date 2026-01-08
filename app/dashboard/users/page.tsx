@@ -19,6 +19,7 @@ import { LineChart } from '@/components/charts/LineChart';
 import { Users, UserPlus, UserCheck, UserMinus, TrendingUp, Activity, MessageCircle, Heart, Map } from 'lucide-react';
 import { downloadJSON, formatNumber } from '@/lib/utils';
 import { getApiUrl, fetchWithTimeout } from '@/lib/api';
+import { getMetricDefinition } from '@/lib/metricDefinitions';
 import type { UserAnalytics, ApiResponse } from '@/types/analytics';
 
 export default function UsersPage() {
@@ -54,7 +55,7 @@ export default function UsersPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    window.location.reload();
   };
 
   const handleExport = () => {
@@ -100,7 +101,7 @@ export default function UsersPage() {
 
   // Prepare most active users data for bar chart
   const activeUsersData = analytics?.user_activity?.most_active_users?.slice(0, 10).map(user => ({
-    name: user.username || user.name || `User ${user.user_id?.slice(-6) || 'Unknown'}`,
+    name: user.username || `User ${user.user_id?.slice(-6) || 'Unknown'}`,
     score: user.activity_score,
   })) || [];
 
@@ -140,24 +141,28 @@ export default function UsersPage() {
             value={formatNumber(analytics?.user_demographics?.total_users || 0)}
             icon={Users}
             color="blue"
+            metricInfo={getMetricDefinition('Total Users', 'users')}
           />
           <MetricCard
             title="Active Users"
             value={formatNumber(analytics?.user_demographics?.active_users || 0)}
             icon={UserCheck}
             color="green"
+            metricInfo={getMetricDefinition('Active Users', 'users')}
           />
           <MetricCard
             title="New Users"
             value={formatNumber(analytics?.user_demographics?.new_users || 0)}
             icon={UserPlus}
             color="purple"
+            metricInfo={getMetricDefinition('New Users', 'users')}
           />
           <MetricCard
             title="Engagement Rate"
             value={`${Math.min(100, ((analytics?.user_demographics?.active_users || 0) / Math.max(analytics?.user_demographics?.total_users || 1, 1) * 100)).toFixed(1)}%`}
             icon={Activity}
             color="blue"
+            metricInfo={getMetricDefinition('Engagement Rate', 'users')}
           />
         </div>
 
@@ -168,24 +173,28 @@ export default function UsersPage() {
             value={`${((analytics?.user_demographics?.new_users || 0) / Math.max(analytics?.user_demographics?.total_users || 1, 1) * 100).toFixed(1)}%`}
             icon={TrendingUp}
             color="green"
+            metricInfo={getMetricDefinition('New User Rate', 'users')}
           />
           <MetricCard
             title="Avg Journeys/User"
             value={analytics?.user_activity?.avg_journeys_per_user?.toFixed(1) || '0.0'}
             icon={Map}
             color="blue"
+            metricInfo={getMetricDefinition('Avg Journeys/User', 'users')}
           />
           <MetricCard
             title="Avg Comments/User"
             value={analytics?.user_activity?.avg_comments_per_user?.toFixed(1) || '0.0'}
             icon={MessageCircle}
             color="green"
+            metricInfo={getMetricDefinition('Avg Comments/User', 'users')}
           />
           <MetricCard
             title="Avg Friends/User"
             value={analytics?.user_activity?.avg_friends_per_user?.toFixed(1) || '0.0'}
             icon={Users}
             color="purple"
+            metricInfo={getMetricDefinition('Avg Friends/User', 'users')}
           />
         </div>
 

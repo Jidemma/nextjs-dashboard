@@ -136,13 +136,29 @@ async function computeJourneyAnalytics(
     }
   ]).toArray();
   
-  const activeJourneys = statusCounts.find(s => 
-    s._id === 'active' || s._id === 'ongoing'
-  )?.count || 0;
+  // Convert status counts to object for easier lookup
+  const statusCountMap: { [key: string]: number } = {};
+  statusCounts.forEach((item: any) => {
+    const status = item._id || 'unknown';
+    statusCountMap[status] = item.count || 0;
+  });
   
-  const completedJourneys = statusCounts.find(s => 
-    s._id === 'completed' || s._id === 'finished'
-  )?.count || 0;
+  // Active journeys: PUBLISHED journeys (also check for lowercase variation)
+  const activeJourneys = (
+    (statusCountMap['active'] || 0) +
+    (statusCountMap['ongoing'] || 0) +
+    (statusCountMap['PUBLISHED'] || 0) +
+    (statusCountMap['published'] || 0)
+  );
+  
+  // Completed journeys: journeys with end_date in the past
+  const now = new Date();
+  const completedMatch: any = { end_date: { $exists: true, $ne: null, $lt: now } };
+  if (startDate || endDate) {
+    completedMatch.start_date = dateFilter;
+  }
+  const completedCount = await journeysCollection.countDocuments(completedMatch);
+  const completedJourneys = completedCount;
   
   // Get total comments
   const totalComments = await commentsCollection.countDocuments(
@@ -150,7 +166,7 @@ async function computeJourneyAnalytics(
   );
   
   // Get most commented journeys
-  const mostCommented = await commentsCollection.aggregate([
+  const mostCommentedRaw = await commentsCollection.aggregate([
     ...(startDate || endDate ? [{ $match: { created_at: dateFilter } }] : []),
     {
       $group: {
@@ -163,8 +179,19 @@ async function computeJourneyAnalytics(
     {
       $lookup: {
         from: 'pandas_journey',
-        localField: '_id',
-        foreignField: '_id',
+        let: { journey_id_var: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $or: [
+                  { $eq: ['$_id', '$$journey_id_var'] },
+                  { $eq: [{ $toString: '$_id' }, { $toString: '$$journey_id_var' }] }
+                ]
+              }
+            }
+          }
+        ],
         as: 'journey'
       }
     },
@@ -172,10 +199,22 @@ async function computeJourneyAnalytics(
       $project: {
         journey_id: { $toString: '$_id' },
         title: { $arrayElemAt: ['$journey.title', 0] },
+        name: { $arrayElemAt: ['$journey.name', 0] },
         comments: 1
       }
     }
   ]).toArray();
+  
+  // Ensure title exists, fallback to name, then to ID-based name if missing
+  const mostCommented = mostCommentedRaw.map((item: any) => {
+    const journeyId = item.journey_id || 'Unknown';
+    const title = item.title || item.name || null;
+    return {
+      ...item,
+      title: title || `Journey ${journeyId.slice(-6)}`,
+      name: undefined // Remove name field
+    };
+  });
   
   // Get popular destinations
   const destinations = await journeysCollection.aggregate([
@@ -256,6 +295,69 @@ async function computeJourneyAnalytics(
     }
   ]).toArray();
   
+  // Get top journey creators (users with most journeys) - potential influencers
+  const topCreatorsRaw = await journeysCollection.aggregate([
+    ...(startDate || endDate ? [{ $match: { start_date: dateFilter } }] : []),
+    {
+      $group: {
+        _id: '$user_id',
+        journey_count: { $sum: 1 }
+      }
+    },
+    { $sort: { journey_count: -1 } },
+    { $limit: limit },
+    {
+      $lookup: {
+        from: 'pandas_users',
+        let: { user_id_var: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $or: [
+                  { $eq: ['$_id', '$$user_id_var'] },
+                  { $eq: [{ $toString: '$_id' }, { $toString: '$$user_id_var' }] }
+                ]
+              }
+            }
+          }
+        ],
+        as: 'user'
+      }
+    },
+    {
+      $project: {
+        user_id: { $toString: '$_id' },
+        journey_count: 1,
+        user_name: { $arrayElemAt: ['$user.userName', 0] },
+        first_name: { $arrayElemAt: ['$user.firstName', 0] },
+        last_name: { $arrayElemAt: ['$user.lastName', 0] }
+      }
+    }
+  ]).toArray();
+  
+  // Build display names for creators, filtering out invalid entries
+  const topJourneyCreators = topCreatorsRaw
+    .filter((item: any) => {
+      const userId = item.user_id || item._id;
+      return userId && 
+             userId !== 'null' && 
+             userId !== 'None' && 
+             userId !== '' &&
+             (item.journey_count || 0) > 0;
+    })
+    .map((item: any) => {
+      const userId = String(item.user_id || item._id || 'Unknown');
+      const displayName = item.user_name || 
+        `${item.first_name || ''} ${item.last_name || ''}`.trim() ||
+        `User ${userId.slice(-6)}`;
+      return {
+        user_id: userId,
+        display_name: displayName,
+        journey_count: item.journey_count || 0
+      };
+    });
+  
   // Get duration distribution
   const durationDistribution = await journeysCollection.aggregate([
     ...(startDate || endDate ? [{ $match: { start_date: dateFilter } }] : []),
@@ -314,6 +416,7 @@ async function computeJourneyAnalytics(
       range: bucket._id === '365+' ? '365+' : `${bucket._id}-${bucket._id === 0 ? 1 : bucket._id === 1 ? 3 : bucket._id === 3 ? 7 : bucket._id === 7 ? 14 : bucket._id === 14 ? 30 : bucket._id === 30 ? 90 : 365} days`,
       count: bucket.count,
     })),
+    top_journey_creators: topJourneyCreators,
   };
 }
 

@@ -146,6 +146,11 @@ export interface JourneyAnalytics {
     range: string;
     count: number;
   }>;
+  top_journey_creators?: Array<{
+    user_id: string;
+    display_name: string;
+    journey_count: number;
+  }>;
 }
 
 // Geographic Analytics Types

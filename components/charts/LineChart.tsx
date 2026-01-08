@@ -46,16 +46,23 @@ export function LineChart({
         <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
       )}
       <ResponsiveContainer width="100%" height={height}>
-        <RechartsLineChart data={data}>
+        <RechartsLineChart 
+          data={data}
+          margin={{ top: 10, right: 20, left: 0, bottom: 40 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis 
             dataKey={xKey} 
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
+            angle={-45}
+            textAnchor="end"
+            height={80}
           />
           <YAxis 
             stroke="#6b7280"
             style={{ fontSize: '12px' }}
+            width={50}
           />
           <Tooltip 
             contentStyle={{
@@ -65,7 +72,9 @@ export function LineChart({
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             }}
           />
-          <Legend />
+          <Legend 
+            wrapperStyle={{ paddingTop: '10px' }}
+          />
           {yKeys.map((yKey) => (
             <Line
               key={yKey.key}
@@ -74,8 +83,8 @@ export function LineChart({
               stroke={yKey.color}
               strokeWidth={2}
               name={yKey.name}
-              dot={{ r: 3 }}
-              activeDot={{ r: 5 }}
+              dot={{ r: 4 }}
+              activeDot={{ r: 6 }}
             />
           ))}
         </RechartsLineChart>

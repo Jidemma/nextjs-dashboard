@@ -52,7 +52,7 @@ export default function GeographicPage() {
   };
 
   const handleRefresh = () => {
-    refetch();
+    window.location.reload();
   };
 
   const handleExport = () => {
