@@ -56,69 +56,16 @@ echo ""
 if [ ! -f .env.local ]; then
     echo "⚙️  Creating .env.local file..."
     cat > .env.local << 'EOF'
-# MongoDB Configuration
-MONGODB_URI=mongodb://njem360user:mongodb52-kg-02-A@95.216.8.140:40774/njemdb?authMechanism=SCRAM-SHA-256&authSource=admin
-MONGODB_DB=njemdb
+# Backend API base URL (FastAPI)
+NEXT_PUBLIC_API_URL=http://localhost:8000
 
-# Next.js Configuration
-NEXT_PUBLIC_APP_NAME=NJEM Analytics Dashboard
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
-
-# Optional: Enable real-time updates (polling interval in ms)
+# Optional: polling interval (ms) for refresh actions
 NEXT_PUBLIC_REFRESH_INTERVAL=30000
-
-# Optional: Enable debug mode
-DEBUG_MODE=false
 EOF
     echo -e "${GREEN}✅ .env.local created${NC}"
-    echo -e "${YELLOW}⚠️  Please review and update MongoDB credentials in .env.local${NC}"
+    echo -e "${YELLOW}⚠️  Update NEXT_PUBLIC_API_URL to point at your backend${NC}"
 else
     echo -e "${GREEN}✅ .env.local already exists${NC}"
-fi
-echo ""
-
-# Test MongoDB connection
-echo "🔌 Testing MongoDB connection..."
-node << 'EOF'
-const { MongoClient } = require('mongodb');
-require('dotenv').config({ path: '.env.local' });
-
-async function testConnection() {
-  const uri = process.env.MONGODB_URI;
-  
-  if (!uri) {
-    console.error('\x1b[31m❌ MONGODB_URI not found in .env.local\x1b[0m');
-    process.exit(1);
-  }
-  
-  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
-  
-  try {
-    await client.connect();
-    console.log('\x1b[32m✅ MongoDB connection successful!\x1b[0m');
-    
-    const db = client.db(process.env.MONGODB_DB);
-    const collections = await db.listCollections().toArray();
-    console.log(`\x1b[32m✅ Found ${collections.length} collections\x1b[0m`);
-    
-  } catch (error) {
-    console.error('\x1b[31m❌ MongoDB connection failed:', error.message, '\x1b[0m');
-    console.error('\x1b[33m⚠️  Please check your MongoDB URI in .env.local\x1b[0m');
-    process.exit(1);
-  } finally {
-    await client.close();
-  }
-}
-
-testConnection();
-EOF
-
-if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "${YELLOW}⚠️  MongoDB connection test failed${NC}"
-    echo "Please check your credentials in .env.local and try again"
-    echo ""
-    exit 1
 fi
 echo ""
 

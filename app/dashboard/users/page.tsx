@@ -16,7 +16,7 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { PieChart } from '@/components/charts/PieChart';
 import { BarChart } from '@/components/charts/BarChart';
 import { LineChart } from '@/components/charts/LineChart';
-import { Users, UserPlus, UserCheck, UserMinus, TrendingUp, Activity, MessageCircle, Heart, Map } from 'lucide-react';
+import { Users, UserCheck, Activity, MessageCircle, Map } from 'lucide-react';
 import { downloadJSON, formatNumber } from '@/lib/utils';
 import { getApiUrl, fetchWithTimeout } from '@/lib/api';
 import { getMetricDefinition } from '@/lib/metricDefinitions';
@@ -135,7 +135,7 @@ export default function UsersPage() {
         </div>
 
         {/* Summary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <MetricCard
             title="Total Users"
             value={formatNumber(analytics?.user_demographics?.total_users || 0)}
@@ -151,13 +151,6 @@ export default function UsersPage() {
             metricInfo={getMetricDefinition('Active Users', 'users')}
           />
           <MetricCard
-            title="New Users"
-            value={formatNumber(analytics?.user_demographics?.new_users || 0)}
-            icon={UserPlus}
-            color="purple"
-            metricInfo={getMetricDefinition('New Users', 'users')}
-          />
-          <MetricCard
             title="Engagement Rate"
             value={`${Math.min(100, ((analytics?.user_demographics?.active_users || 0) / Math.max(analytics?.user_demographics?.total_users || 1, 1) * 100)).toFixed(1)}%`}
             icon={Activity}
@@ -167,14 +160,7 @@ export default function UsersPage() {
         </div>
 
         {/* Secondary Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
-            title="New User Rate"
-            value={`${((analytics?.user_demographics?.new_users || 0) / Math.max(analytics?.user_demographics?.total_users || 1, 1) * 100).toFixed(1)}%`}
-            icon={TrendingUp}
-            color="green"
-            metricInfo={getMetricDefinition('New User Rate', 'users')}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <MetricCard
             title="Avg Journeys/User"
             value={analytics?.user_activity?.avg_journeys_per_user?.toFixed(1) || '0.0'}
